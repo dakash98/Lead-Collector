@@ -1,12 +1,13 @@
-import requests
-import smtplib
-import json
-import math
 import os
+import math
+import json
 import time
-from decouple import config
-import constants as const
+import smtplib
+import requests
+import schedule
 import pandas as pd
+import constants as const
+from decouple import config
 
 
 USER = config(const.GMAIL_USER)
@@ -20,29 +21,40 @@ s = smtplib.SMTP('smtp.gmail.com', 587)
 s.ehlo()
 s.starttls()
 s.ehlo()
-print(USER, PASSWORD)
 s.login(USER, PASSWORD)
 
 
 def get_url(page_no):
     return URL.format(page_no)
 
-x = requests.get(get_url(1), cookies=COOKIES)
-lead_data = json.loads(x.content)
-total_lead_count = lead_data[const.COUNT]
-get_request_count = math.ceil(total_lead_count/ 20)
 
-print("total lead count ", total_lead_count)
+def find_request_count():
+    request_count = 0
+    try:
+        x = requests.get(get_url(1), cookies=COOKIES)
+        lead_data = json.loads(x.content)
+        total_lead_count = lead_data[const.COUNT]
+        request_count = math.ceil(total_lead_count/ 20)
+        print(f'Total Lead Count : {total_lead_count}, Request Count : {request_count}')
+    except Exception as e:
+        print(f'{e} has occured in get_data function')
+    return request_count
+
 
 def get_data(url, cookies, page_no):
-    url = get_url(page_no)
-    x = requests.get(url, cookies=cookies)
-    lead_data = json.loads(x.content)
-    # TODO need to handle error
-    return lead_data[const.RESULTS]
+    results = []
+    try:
+        url = get_url(page_no)
+        x = requests.get(url, cookies=cookies)
+        lead_data = json.loads(x.content)
+        results = lead_data[const.RESULTS]
+    except Exception as e:
+        print(f'{e} has occured in get_data function')
+    return results
 
 
 def delete_duplicate_clients(duplicate_id_list):
+    print("Duplicate data list : ", duplicate_id_list)
     for duplicate_id in duplicate_id_list:
         a = requests.delete(f'https://web.privyr.com/api/dashboard-v2/api/v1/user-client/{duplicate_id}/', cookies=COOKIES)
 
@@ -52,21 +64,15 @@ def mark_new_lead_to_false(client_id):
     return lead_status
 
 
-leads_list = []
-leads_data_for_csv = []
-duplicate_id_list = []
-
 def fetch_and_iterate_through_leads():
-    for iteration in range(get_request_count):
+    leads_list, leads_data_for_csv, duplicate_id_list, request_count = [], [], [], find_request_count()
+    for iteration in range(request_count):
         leads = get_data(URL, COOKIES, iteration+1)
         leads_in_csv = read_csv_file(const.FILE_NAME) if checks_file_existence() else []
-        return_value = iterate_leads_and_check_data_in_csv(leads, leads_in_csv)
+        return_value, leads_list, leads_data_for_csv, duplicate_id_list = iterate_leads_and_check_data_in_csv(leads, leads_in_csv, leads_list, leads_data_for_csv, duplicate_id_list)
         if return_value == const.CLIENT_EXIST:
             break
-    create_csv_file(leads_data_for_csv)
-    print(duplicate_id_list)
-    print("updated code : ", leads_data_for_csv)
-    delete_duplicate_clients(duplicate_id_list)
+    return leads_data_for_csv, duplicate_id_list
 
 
 def is_client_already_exist(lead, leads_in_csv):
@@ -82,20 +88,22 @@ def check_mobile_number(lead, lead_in_csv):
     return False
 
 
-def iterate_leads_and_check_data_in_csv(leads, leads_in_csv):
+def iterate_leads_and_check_data_in_csv(leads, leads_in_csv, leads_list, leads_data_for_csv, duplicate_id_list):
     for lead in leads:
-        if check_duplicate_or_test_client(lead, leads_list):
+        if (duplicate_id_list := check_duplicate_or_test_client(lead, leads_list, duplicate_id_list)):
             continue
         interested_in, ad_name = get_interested_in_and_ad_name_from_notes(lead)
         leads_list.insert(0, {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : interested_in, const.AD_NAME : ad_name})
         if checks_file_existence() and is_client_already_exist(lead, leads_in_csv):
-            return const.CLIENT_EXIST
+            return const.CLIENT_EXIST, leads_list, leads_data_for_csv, duplicate_id_list
         leads_data_for_csv.insert(0, [lead[const.NAME], get_phone_number(lead), interested_in, ad_name, True])
+    return '', leads_list, leads_data_for_csv, duplicate_id_list
         
 
-def check_duplicate_or_test_client(lead, leads_list):
+def check_duplicate_or_test_client(lead, leads_list, duplicate_id_list):
     if ((lead[const.DISPLAY_NAME] == const.TEST_LEAD and lead[const.EMAIL] == const.SUPPORT_EMAIL) or (lead[const.DISPLAY_NAME] == const.PRIVYR_SUPPORT)) or  (len(leads_list) > 0 and leads_list[0][const.NAME] == lead[const.NAME] and leads_list[0][const.PHONE_NUMBER] == get_phone_number(lead)):
         duplicate_id_list.append(lead[const.ID])
+    return duplicate_id_list
 
 
 def get_interested_in_and_ad_name_from_notes(lead):
@@ -143,7 +151,19 @@ def create_and_add_data_to_csv_file(leads, fields, filename):
     df.to_csv(filename, sep=',', index=False,header=True)    
 
 
-fetch_and_iterate_through_leads()
+def main():
+    leads_data_for_csv, duplicate_id_list = fetch_and_iterate_through_leads()
+    create_csv_file(leads_data_for_csv)
+    print("Updated code : ", leads_data_for_csv)
+    delete_duplicate_clients(duplicate_id_list)
+    print('------------------')
+
+# schedule.every(1).minutes.do(fetch_and_iterate_through_leads)
+schedule.every(30).seconds.do(main)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 
 
 # def send_email(message):

@@ -1,5 +1,7 @@
-Flask
-Gunicorn
-Flask-Mail
+# Flask
+# Gunicorn
+# Flask-Mail
 requests
 python-decouple
+schedule
+pandas
