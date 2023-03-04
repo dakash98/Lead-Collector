@@ -23,7 +23,7 @@ mail = Mail(app)
 def get_webhook():
     leads_dict = get_leads()
     lead_list  = leads_dict.to_dict('records')
-    return render_template('index.html', comments=lead_list[::-1])
+    return render_template('index.html', comments=lead_list[::-1], page_reload_time=config(const.TIME_INTERVAL))
 
 def send_email(lead_id):
     msg = Message(
