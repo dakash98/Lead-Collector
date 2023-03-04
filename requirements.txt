@@ -1,0 +1,5 @@
+Flask
+Gunicorn
+Flask-Mail
+requests
+python-decouple
