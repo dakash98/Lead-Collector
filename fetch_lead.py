@@ -158,12 +158,13 @@ def main():
     delete_duplicate_clients(duplicate_id_list)
     print('------------------')
 
+main()
 # schedule.every(1).minutes.do(fetch_and_iterate_through_leads)
-schedule.every(int(config(const.TIME_INTERVAL))).seconds.do(main)
+# schedule.every(int(config(const.TIME_INTERVAL))).seconds.do(main)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
 
 
 # def send_email(message):
