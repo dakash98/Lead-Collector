@@ -159,7 +159,7 @@ def main():
     print('------------------')
 
 # schedule.every(1).minutes.do(fetch_and_iterate_through_leads)
-schedule.every(600).seconds.do(main)
+schedule.every(config(const.TIME_INTERVAL)).seconds.do(main)
 
 while True:
     schedule.run_pending()

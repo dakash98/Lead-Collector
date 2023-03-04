@@ -35,3 +35,4 @@ RESULTS = 'results'
 SUPPORT_EMAIL = 'support@privyr.com'
 
 TEST_LEAD = 'Test Lead'
+TIME_INTERVAL = 'TIME_INTERVAL'
