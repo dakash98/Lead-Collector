@@ -1,8 +1,9 @@
 import constants as const
 from decouple import config
 from flask_mail import Mail, Message
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from fetch_lead import main as get_leads
+from forms import LeadSearchForm
 
 app = Flask(__name__)
 app.debug = True
@@ -19,11 +20,19 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 
 
-@app.route('/get-leads', methods=['GET'])
+@app.route('/get-leads', methods=['GET', 'POST'])
 def get_webhook():
+    lead_list, search = [], LeadSearchForm(request.form)
     leads_dict = get_leads()
-    lead_list  = leads_dict.to_dict('records')
-    return render_template('index.html', comments=lead_list[::-1], page_reload_time=config(const.TIME_INTERVAL))
+    lead_list  = leads_dict.to_dict('records')[::-1]
+    if request.method == 'POST':
+        
+        filtered_list = get_filtered_list(search.data, lead_list)
+
+        print(search.data)
+        return render_template('index.html', comments=filtered_list, page_reload_time=config(const.TIME_INTERVAL), form=search)
+    return render_template('index.html', comments=lead_list, page_reload_time=config(const.TIME_INTERVAL), form=search)
+
 
 def send_email(lead_id):
     msg = Message(
@@ -34,3 +43,13 @@ def send_email(lead_id):
     msg.body = f'Hello Akash, You have received an email with lead id {lead_id}'
     mail.send(msg)
     return "Email Sent"
+
+
+def get_filtered_list(form, lead_list):
+    print(form)
+    field, value = form['select'], form['search']
+    filtered_list = []
+    for lead in lead_list:
+        if lead[field].find(value) == 0:
+            filtered_list.append(lead)
+    return filtered_list

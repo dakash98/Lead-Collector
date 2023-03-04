@@ -5,3 +5,4 @@ requests
 python-decouple
 schedule
 pandas
+Flask-WTF

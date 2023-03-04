@@ -1,8 +1,17 @@
 
 {% block content %}
     <h1 style='text-align:center;'>{% block title %} Housing Mark Leads {% endblock %}</h1>
+    {% from "_formhelpers.html" import render_field %}
+    <form method="post">
+        <dl>
+            {{ render_field(form.select) }}
+            <p>
+            {{ render_field(form.search) }}
+            </p>
+        </dl>
+        <p><input type="submit" value="Search"></p>
+    </form>
     <div style="width: 80%; margin: auto">
-        
         <div>
             <table>
                 <tr style="padding: 10px; background-color: coral;">
