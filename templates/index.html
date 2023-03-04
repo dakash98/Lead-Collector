@@ -1,0 +1,36 @@
+
+{% block content %}
+    <h1 style='text-align:center;'>{% block title %} Housing Mark Leads {% endblock %}</h1>
+    <div style="width: 80%; margin: auto">
+        
+        <div>
+            <table>
+                <tr style="padding: 10px; background-color: coral;">
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Interested In</th>
+                    <th>Ad Name</th>
+                    <th>Email Sent</th>
+                    <th>New Lead</th>
+                </tr>
+                {% for comment in comments %}
+                <tr style="padding: 10px; background-color: rgb(60, 202, 202);">
+                    <td>{{ comment['name'] }}</td>
+                    <td>{{ comment['phone_number'] }}</td>
+                    <td>{{ comment['interested_in'] }}</td>
+                    <td>{{ comment['ad_name'] }}</td>
+                    <td>{{ comment['email_sent'] }}</td>
+                    <td>{{ comment['new_lead'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        
+    </div>
+{% endblock %}
+
+<script type="text/javascript">
+    setTimeout(function(){
+      location = ''
+    },5000)
+</script>

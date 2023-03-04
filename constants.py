@@ -25,6 +25,7 @@ IS_NEW_LEAD = 'is_new_lead'
 
 NAME = 'name'
 NATIONAL_NUMBER = 'national_number'
+NEW_LEAD = 'new_lead'
 NOTES = 'notes'
 
 PHONE_NUMBER = 'phone_number'
