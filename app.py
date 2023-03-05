@@ -9,7 +9,7 @@ app.debug = True
 
 
 @app.route('/get-leads', methods=['GET', 'POST'])
-def get_leads():
+def fetch_leads():
     from email_services import send_new_leads_to_client
     lead_list, search = [], LeadSearchForm(request.form)
     leads_dict, new_leads_list = get_leads()
