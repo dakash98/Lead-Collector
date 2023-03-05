@@ -46,10 +46,9 @@ def send_email(lead_id):
 
 
 def get_filtered_list(form, lead_list):
-    print(form)
-    field, value = form['select'], form['search']
-    filtered_list = []
+    field, value, filtered_list = form['select'], form['search'], []
     for lead in lead_list:
-        if lead[field].find(value) == 0:
+        lower_value = lead[field].lower()
+        if lower_value.find(value.lower()) != -1:
             filtered_list.append(lead)
     return filtered_list

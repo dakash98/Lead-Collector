@@ -88,9 +88,14 @@ def iterate_leads_and_check_data_in_csv(leads, leads_in_csv, leads_list, leads_d
         leads_list.insert(0, {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : interested_in, const.AD_NAME : ad_name})
         if checks_file_existence() and is_client_already_exist(lead, leads_in_csv):
             return const.CLIENT_EXIST, leads_list, leads_data_for_csv, duplicate_id_list
-        leads_data_for_csv.insert(0, [lead[const.NAME], get_phone_number(lead), interested_in, ad_name, True, False])
+        leads_data_for_csv.insert(0, [lead[const.NAME], get_phone_number(lead), replace_underscore(interested_in), replace_underscore(ad_name), True, False])
     return '', leads_list, leads_data_for_csv, duplicate_id_list
         
+
+def replace_underscore(data):
+    return data.replace("_", " ")
+
+
 
 def check_duplicate_or_test_client(lead, leads_list, duplicate_id_list):
     if ((lead.get('source_details') and lead['source_details']["lead_source"] == "WEBHOOK_GENERIC") or (lead[const.DISPLAY_NAME] == const.TEST_LEAD and lead[const.EMAIL] == const.SUPPORT_EMAIL) or (lead[const.DISPLAY_NAME] == const.PRIVYR_SUPPORT)) or  (len(leads_list) > 0 and leads_list[0][const.NAME] == lead[const.NAME] and leads_list[0][const.PHONE_NUMBER] == get_phone_number(lead)):
