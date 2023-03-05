@@ -154,7 +154,7 @@ def main():
     print("Updated code : ", leads_data_for_csv)
     delete_duplicate_clients(duplicate_id_list)
     print('------------------')
-    return read_csv_and_return_dataframe()
+    return read_csv_and_return_dataframe(), leads_data_for_csv
 
 
 def read_csv_and_return_dataframe():
