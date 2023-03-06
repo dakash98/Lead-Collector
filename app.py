@@ -7,28 +7,29 @@ from flask import Flask, request, jsonify, render_template
 app = Flask(__name__)
 
 @app.route('/get-leads', methods=['GET', 'POST'])
-def get_leads():
+def find_leads():
     from email_services import send_new_leads_to_client
     lead_list, search = [], LeadSearchForm(request.form)
     leads_dict, new_leads_list = get_leads()
+    unique_ad_name,  unqiue_interested_in = leads_dict.ad_name.unique(), leads_dict.interested_in.unique()
     lead_list  = leads_dict.to_dict('records')[::-1]
     send_new_leads_to_client(new_leads_list)
     if request.method == 'POST':
         filtered_list = get_filtered_list(search.data, lead_list)
-        return render_template('index.html', comments=filtered_list, page_reload_time=config(const.TIME_INTERVAL), form=search)
+        return render_template('index.html', comments=filtered_list, page_reload_time=config(const.TIME_INTERVAL), form=search, unique_ad_name= unique_ad_name, unqiue_interested_in=unqiue_interested_in)
     return render_template('index.html', comments=lead_list, page_reload_time=config(const.TIME_INTERVAL), form=search)
 
 
 @app.route('/fetch-leads', methods=['GET', 'POST'])
 def retrieve_leads():
     from email_services import send_new_leads_to_client
-    lead_list, search = [], request.value
     leads_dict, new_leads_list = get_leads()
+    unique_ad_name,  unqiue_interested_in = leads_dict.ad_name.unique().tolist(), leads_dict.interested_in.unique().tolist()
     lead_list  = leads_dict.to_dict('records')[::-1]
     send_new_leads_to_client(new_leads_list)
     if request.method == 'POST':
-        lead_list = get_filtered_list(search.data, lead_list)
-    response = jsonify({"leads" : lead_list, "page_reload_time" : config(const.TIME_INTERVAL)})
+        lead_list = get_filtered_list(request.form, lead_list)
+    response = jsonify({"leads" : lead_list, "page_reload_time" : config(const.TIME_INTERVAL), "unique_ad_name": unique_ad_name, "unqiue_interested_in": unqiue_interested_in})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -42,5 +43,5 @@ def get_filtered_list(req_data, lead_list):
     return filtered_list
 
 
-# if __name__ == "__main__":
-#     app.run(port=8000, debug=True)
+if __name__ == "__main__":
+    app.run(port=8000, debug=True)
