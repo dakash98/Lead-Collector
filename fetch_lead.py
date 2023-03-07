@@ -65,6 +65,22 @@ def fetch_and_iterate_through_leads():
     return leads_data_for_csv, duplicate_id_list
 
 
+def fetch_paginated_leads(page_no):
+    '''return all leads of a particular page and total page count'''
+    total_pages, leads = find_request_count(), get_data(URL, COOKIES, page_no) 
+    leads_list = iterate_leads_and_convert_into_list(leads)
+    return leads_list, total_pages
+
+
+def iterate_leads_and_convert_into_list(leads):
+    '''iterate through leads and convert into a list of representable format'''
+    leads_list = []
+    for lead in leads:
+        interested_in, ad_name = get_interested_in_and_ad_name_from_notes(lead)
+        leads_list.insert(0, {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : replace_underscore(interested_in), const.AD_NAME : replace_underscore(ad_name), const.SENT_EMAIL: True, const.NEW_LEAD: False})
+    return leads_list
+
+
 def is_client_already_exist(lead, leads_in_csv):
     last_item = len(leads_in_csv[const.NAME])-1
     if lead[const.NAME] == leads_in_csv[const.NAME][last_item]:
