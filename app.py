@@ -44,7 +44,7 @@ def retrieve_pagniated_leads(page_no=1):
     unique_ad_name,  unqiue_interested_in = df.ad_name.unique().tolist(), df.interested_in.unique().tolist()
     if request.method == 'POST':
         leads_list = get_filtered_list(request.form, leads_list)
-    response = jsonify({"leads" : leads_list, "page_reload_time" : config(const.TIME_INTERVAL), "unique_ad_name": unique_ad_name, "unique_interested_in": unqiue_interested_in, "count": page_count})
+    response = jsonify({"leads" : leads_list[::-1], "page_reload_time" : config(const.TIME_INTERVAL), "unique_ad_name": unique_ad_name, "unique_interested_in": unqiue_interested_in, "count": page_count})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 

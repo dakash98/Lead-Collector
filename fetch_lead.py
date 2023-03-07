@@ -1,13 +1,11 @@
 import os
 import math
 import json
-import time
-import smtplib
 import requests
-import schedule
 import pandas as pd
 import constants as const
 from decouple import config
+from datetime import datetime
 
 
 COOKIES = {const.COOKIE : config(const.COOKIES)}
@@ -77,7 +75,7 @@ def iterate_leads_and_convert_into_list(leads):
     leads_list = []
     for lead in leads:
         interested_in, ad_name = get_interested_in_and_ad_name_from_notes(lead)
-        leads_list.insert(0, {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : replace_underscore(interested_in), const.AD_NAME : replace_underscore(ad_name), const.SENT_EMAIL: True, const.NEW_LEAD: False})
+        leads_list.insert(0, {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : replace_underscore(interested_in), const.AD_NAME : replace_underscore(ad_name), const.SENT_EMAIL: True, const.NEW_LEAD: False, "created_at": get_date_from_timestamp(lead['created_at']) })
     return leads_list
 
 
@@ -104,13 +102,16 @@ def iterate_leads_and_check_data_in_csv(leads, leads_in_csv, leads_list, leads_d
         leads_list.insert(0, {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : interested_in, const.AD_NAME : ad_name})
         if checks_file_existence() and is_client_already_exist(lead, leads_in_csv):
             return const.CLIENT_EXIST, leads_list, leads_data_for_csv, duplicate_id_list
-        leads_data_for_csv.insert(0, [lead[const.NAME], get_phone_number(lead), replace_underscore(interested_in), replace_underscore(ad_name), True, False])
+        leads_data_for_csv.insert(0, [lead[const.NAME], get_phone_number(lead), replace_underscore(interested_in), replace_underscore(ad_name), True, False, get_date_from_timestamp(lead['created_at'])])
     return '', leads_list, leads_data_for_csv, duplicate_id_list
         
 
 def replace_underscore(data):
     return data.replace("_", " ")
 
+
+def get_date_from_timestamp(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%d-%b-%Y')
 
 
 def check_duplicate_or_test_client(lead, leads_list, duplicate_id_list):
@@ -144,7 +145,7 @@ def read_csv_file(filename):
 
 def create_csv_file(leads):
     filename = const.FILE_NAME
-    fields = [const.NAME, const.PHONE_NUMBER, const.INTERESTED_IN, const.AD_NAME, const.SENT_EMAIL, const.NEW_LEAD]
+    fields = [const.NAME, const.PHONE_NUMBER, const.INTERESTED_IN, const.AD_NAME, const.SENT_EMAIL, const.NEW_LEAD, 'created_at']
     append_data_to_csv_file(leads, filename) if checks_file_existence() else create_and_add_data_to_csv_file(leads, fields, filename)
 
 

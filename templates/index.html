@@ -21,6 +21,7 @@
                     <th>Ad Name</th>
                     <th>Email Sent</th>
                     <th>New Lead</th>
+                    <th>Lead Date</th>
                 </tr>
                 {% for comment in comments %}
                 <tr style="padding: 10px; background-color: rgb(60, 202, 202);">
@@ -30,6 +31,7 @@
                     <td>{{ comment['ad_name'] }}</td>
                     <td>{{ comment['email_sent'] }}</td>
                     <td>{{ comment['new_lead'] }}</td>
+                    <td>{{ comment['created_at'] }}</td>
                 </tr>
                 {% endfor %}
             </table>
