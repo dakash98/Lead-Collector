@@ -49,8 +49,9 @@ def retrieve_pagniated_leads(page_no=1):
     return response
 
 
-@app.route('/download-leads-csv') # this is a job for GET, not POST
+@app.route('/download-leads-csv')
 def download_csv_file():
+    # https://stackoverflow.com/questions/30024948/flask-download-a-csv-file-on-clicking-a-button
     return send_file(
         'lead_records.csv',
         mimetype='text/csv',

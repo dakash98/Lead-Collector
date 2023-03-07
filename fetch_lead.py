@@ -111,7 +111,7 @@ def replace_underscore(data):
 
 
 def get_date_from_timestamp(timestamp):
-    return datetime.fromtimestamp(timestamp).strftime('%d-%b-%Y')
+    return datetime.fromtimestamp(timestamp).strftime('%d-%b-%Y %I:%M %p')
 
 
 def check_duplicate_or_test_client(lead, leads_list, duplicate_id_list):
