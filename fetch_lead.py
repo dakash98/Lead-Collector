@@ -1,6 +1,7 @@
 import os
 import math
 import json
+import pytz 
 import requests
 import pandas as pd
 import constants as const
@@ -111,7 +112,8 @@ def replace_underscore(data):
 
 
 def get_date_from_timestamp(timestamp):
-    return datetime.fromtimestamp(timestamp).strftime('%d-%b-%Y %I:%M %p')
+    time_zone = pytz.timezone('Asia/Kolkata') 
+    return datetime.fromtimestamp(timestamp, tz=time_zone).strftime('%d-%b-%Y %I:%M %p')
 
 
 def check_duplicate_or_test_client(lead, leads_list, duplicate_id_list):
