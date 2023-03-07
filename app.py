@@ -3,7 +3,7 @@ from decouple import config
 from forms import LeadSearchForm
 import pandas as pd
 from fetch_lead import fetch_paginated_leads, main as get_leads
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, render_template, redirect, url_for, send_file
 
 app = Flask(__name__)
 
@@ -47,6 +47,16 @@ def retrieve_pagniated_leads(page_no=1):
     response = jsonify({"leads" : leads_list[::-1], "page_reload_time" : config(const.TIME_INTERVAL), "unique_ad_name": unique_ad_name, "unique_interested_in": unqiue_interested_in, "count": page_count})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
+
+
+@app.route('/download-leads-csv') # this is a job for GET, not POST
+def download_csv_file():
+    return send_file(
+        'lead_records.csv',
+        mimetype='text/csv',
+        download_name='Leads.csv',
+        as_attachment=True
+    )
 
 
 def get_filtered_list(req_data, lead_list):
