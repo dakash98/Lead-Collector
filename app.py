@@ -3,7 +3,7 @@ from decouple import config
 from forms import LeadSearchForm
 import pandas as pd
 from fetch_lead import fetch_paginated_leads, main as get_leads
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 
 app = Flask(__name__)
 
@@ -37,6 +37,8 @@ def get_all_leads():
 
 @app.route('/retrieve-leads/<page_no>', methods=['GET', 'POST'])
 def retrieve_pagniated_leads(page_no=1):
+    if page_no == 'all':
+        return redirect(url_for('get_all_leads'))
     leads_list, page_count = fetch_paginated_leads(page_no)
     df = pd.DataFrame(leads_list)
     unique_ad_name,  unqiue_interested_in = df.ad_name.unique().tolist(), df.interested_in.unique().tolist()
