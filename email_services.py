@@ -19,7 +19,7 @@ mail = Mail(app)
 def send_new_leads_to_client(new_leads_list):
     for lead in new_leads_list:
         print(lead)
-        # send_email(lead[0], lead[1], lead[2], lead[3])
+        send_email(lead[0], lead[1], lead[2], lead[3])
 
 
 def send_email(name, phone_number, interested_in, ad_name):
