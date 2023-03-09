@@ -4,7 +4,7 @@ import constants as const
 from decouple import config
 from flask_mail import Mail, Message
 
-mail = Mail(app) # instantiate the mail class
+# mail = Mail(app) # instantiate the mail class
 
 # configuration of mail
 app.config['MAIL_SERVER']='smtp.gmail.com'
@@ -30,5 +30,6 @@ def send_email(name, phone_number, interested_in, ad_name):
                 recipients = recipients_list
                )
     msg.body = f'Hello, You have received a new lead, Name : {name}, Phone Number : {phone_number}, Interested In : {interested_in}'
-    mail.send(msg)
+    with app.app_context():
+        mail.send(msg)
     return "Email Sent"
