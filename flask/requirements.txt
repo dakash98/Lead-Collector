@@ -7,3 +7,6 @@ schedule
 pandas
 Flask-WTF
 Flask-APScheduler
+Flask-SQLAlchemy
+Flask-Migrate
+psycopg2-binary
