@@ -6,3 +6,4 @@ python-decouple
 schedule
 pandas
 Flask-WTF
+Flask-APScheduler

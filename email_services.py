@@ -30,6 +30,7 @@ def send_email(name, phone_number, interested_in, ad_name):
                 recipients = recipients_list
                )
     msg.body = f'Hello, You have received a new lead, Name : {name}, Phone Number : {phone_number}, Interested In : {interested_in}'
+    # https://stackoverflow.com/questions/21362700/using-flask-mail-asynchronously-results-in-runtimeerror-working-outside-of-app
     with app.app_context():
         mail.send(msg)
     return "Email Sent"
