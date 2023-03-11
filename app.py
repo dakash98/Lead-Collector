@@ -81,10 +81,11 @@ def get_filtered_list(req_data, lead_list):
     return filtered_list
 
 
+scheduler = APScheduler()
+scheduler.add_job(func=get_new_leads_and_update_csv, trigger='interval', id='job', seconds=40)
+scheduler.start()
+
 if __name__ == "__main__":
-    scheduler = APScheduler()
-    scheduler.add_job(func=get_new_leads_and_update_csv, trigger='interval', id='job', seconds=40)
-    scheduler.start()
     app.run(port=8000, debug=True)
 
 
