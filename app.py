@@ -4,8 +4,8 @@ from forms import LeadSearchForm
 import pandas as pd
 from fetch_lead import fetch_paginated_leads, main as get_leads, fetch_and_iterate_through_leads, create_csv_file
 from flask import Flask, request, jsonify, render_template, redirect, url_for, send_file
-# import threading
-from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+
 
 
 app = Flask(__name__)
@@ -81,9 +81,10 @@ def get_filtered_list(req_data, lead_list):
     return filtered_list
 
 
-scheduler = APScheduler()
-scheduler.add_job(func=get_new_leads_and_update_csv, trigger='interval', id='job', seconds=40)
-scheduler.start()
+# https://betterprogramming.pub/introduction-to-apscheduler-86337f3bb4a6
+sched = BackgroundScheduler(daemon=True)
+sched.add_job(get_new_leads_and_update_csv,'interval',minutes=1)
+sched.start()
 
 if __name__ == "__main__":
     app.run(port=8000, debug=True)
