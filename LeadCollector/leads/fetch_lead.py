@@ -23,14 +23,20 @@ def get_url(page_no):
 
 def find_request_count():
     request_count = 0
-    try:
-        x = requests.get(get_url(1), cookies=COOKIES)
-        lead_data = json.loads(x.content)
-        total_lead_count = lead_data[const.COUNT]
-        request_count = math.ceil(total_lead_count/ 20)
-        print(f'Total Lead Count : {total_lead_count}, Request Count : {request_count}')
-    except Exception as e:
-        print(f'{e} has occured in get_data function')
+    # try:
+    #     x = requests.get(get_url(1), cookies=COOKIES)
+    #     lead_data = json.loads(x.content)
+    #     total_lead_count = lead_data[const.COUNT]
+    #     request_count = math.ceil(total_lead_count/ 20)
+    #     print(f'Total Lead Count : {total_lead_count}, Request Count : {request_count}')
+    # except Exception as e:
+    #     print(Exception)
+    #     print(f'{e} has occured in get_data function')
+    x = requests.get(get_url(1), cookies=COOKIES)
+    lead_data = json.loads(x.content)
+    total_lead_count = lead_data[const.COUNT]
+    request_count = math.ceil(total_lead_count/ 20)
+    print(f'Total Lead Count : {total_lead_count}, Request Count : {request_count}')
     return request_count, total_lead_count
 
 
@@ -59,19 +65,19 @@ def mark_new_lead_to_false(client_id):
 
 def fetch_and_iterate_through_leads():
     request_count, _ = find_request_count()
-    leads_list, latest_lead, duplicate_id_list, leads_data_for_csv = [], [], [], []
-    for iteration in range(request_count):
-        leads = get_data(URL, COOKIES, iteration+1)
+    latest_lead, duplicate_id_list = [], []
+    for iteration in range(request_count+1, 1, -1):
+        leads = get_data(URL, COOKIES, iteration-1)
         latest_lead = fetch_latest_lead()
-        return_value, leads_list, leads_data_for_csv, duplicate_id_list = iterate_leads_and_check_data_in_csv(leads, latest_lead, leads_list, duplicate_id_list)
+        return_value, duplicate_id_list = iterate_leads_and_check_data_in_csv(leads, latest_lead, duplicate_id_list)
         if return_value == const.CLIENT_EXIST:
             break
-    return leads_data_for_csv, duplicate_id_list
+    return duplicate_id_list
 
 
 def fetch_latest_lead():
     from leads.models import LeadsModel
-    latest_lead = LeadsModel.objects.all().first()
+    latest_lead = LeadsModel.objects.all().last()
     return latest_lead
 
 
@@ -96,8 +102,9 @@ def iterate_leads_and_convert_into_list(leads):
     return leads_list
 
 
-def is_client_already_exist(lead, lastest_lead):
-    if lastest_lead and lead[const.NAME] == getattr(lastest_lead, 'name'):
+def is_client_already_exist(lead, latest_lead, lead_ad_name):
+    if latest_lead and lead[const.NAME] == getattr(latest_lead, const.NAME) and lead_ad_name == getattr(latest_lead, const.AD_NAME):
+        print(latest_lead.name, lead['name'])
         return True
     return False
 
@@ -108,24 +115,28 @@ def check_mobile_number(lead, lead_in_csv):
     return False
 
 
-def iterate_leads_and_check_data_in_csv(leads, latest_lead, leads_list, duplicate_id_list):
-    from leads.models import LeadsModel
-    for lead in leads:
+def iterate_leads_and_check_data_in_csv(leads, latest_lead, duplicate_id_list):
+    leads_list = []
+    for lead in leads[::-1]:
         if (duplicate_id_list := check_duplicate_or_test_client(lead, leads_list, duplicate_id_list)):
             # delete_duplicate_clients([lead['id']])
             print("deleting dummy or duplicate client : ", lead)
             duplicate_id_list.pop()
             continue
-        if is_client_already_exist(lead, latest_lead):
-            print("wow client already exists")
-            return const.CLIENT_EXIST, leads_list, [], duplicate_id_list
         interested_in, ad_name = get_interested_in_and_ad_name_from_notes(lead)
+        if is_client_already_exist(lead, latest_lead, ad_name):
+            print("wow client already exists")
+            return const.CLIENT_EXIST, duplicate_id_list
         lead_dict = {const.NAME: lead[const.NAME], const.PHONE_NUMBER : get_phone_number(lead), const.INTERESTED_IN : interested_in, const.AD_NAME : ad_name, "email_sent" : False, "new_lead": True, "created_at": get_date_from_timestamp(lead['created_at'])}
-        leads_list.insert(0, lead_dict)
-        lead_obj = LeadsModel(**lead_dict)
-        lead_obj.save()
-        # leads_data_for_csv.insert(0, [lead[const.NAME], get_phone_number(lead), replace_underscore(interested_in), replace_underscore(ad_name), True, False, get_date_from_timestamp(lead['created_at'])])
-    return '', leads_list, [], duplicate_id_list
+        leads_list.insert(0, lead_dict), save_lead_in_model(lead_dict)
+    return '', duplicate_id_list
+
+
+def save_lead_in_model(lead_dict):
+    from leads.models import LeadsModel
+    lead_obj = LeadsModel(**lead_dict)
+    lead_obj.save()
+    return ''
         
 
 def replace_underscore(data):
@@ -188,14 +199,13 @@ def create_and_add_data_to_csv_file(leads, fields, filename):
     df.to_csv(filename, sep=',', index=False,header=True)    
 
 
-def main():
-    leads_data_for_csv, duplicate_id_list = fetch_and_iterate_through_leads()
-    create_csv_file(leads_data_for_csv)
-    print("Updated code : ", leads_data_for_csv)
-    delete_duplicate_clients(duplicate_id_list)
-    print('------------------')
-    return read_csv_and_return_dataframe(), leads_data_for_csv
-
+# def main():
+#      duplicate_id_list = fetch_and_iterate_through_leads()
+#     create_csv_file(
+#     print("Updated code : ", 
+#     delete_duplicate_clients(duplicate_id_list)
+#     print('------------------')
+#     return read_csv_and_return_dataframe(), 
 
 def read_csv_and_return_dataframe():
     df = pd.read_csv(const.FILE_NAME)
