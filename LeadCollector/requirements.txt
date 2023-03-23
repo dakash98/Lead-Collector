@@ -1,0 +1,7 @@
+django
+requests
+django-environ
+psycopg2-binary==2.8.6
+djangorestframewor==3.14.0
+django-extensions
+# pip install -e git+https://github.com/django-extensions/django-extensions.git#egg=django-extensions
